@@ -257,4 +257,59 @@ async def chatbot_sticker_pvt(client: Client, message: Message):
                 await message.reply_text(f"{hey}")
             if not Yo == "text":
                 await message.reply_sticker(f"{hey}")
+
+
+@app.on_message(filters.text)
+async def handle_messages(bot, message):
+    try:
+        unwanted_symbols = ["/", ":", ";", "*", "?"]
+
+        
+        if message.text[0] in unwanted_symbols:
+            print(f"Ignored message: {message.text}")
+            return
+
+        await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
+
+        query = message.text
+        print(f"Processing query: {query}")
+
+        headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": query
+                }
+            ]
+        }
+
+        response = requests.post(BASE_URL, json=payload, headers=headers)
+
+        if response.status_code == 200 and response.text.strip():
+            response_data = response.json()
+            if "choices" in response_data and len(response_data["choices"]) > 0:
+                result = response_data["choices"][0]["message"]["content"]
+                await message.reply_text(
+                    f"{result}",
+                    parse_mode=ParseMode.MARKDOWN
+                )
+            else:
+                await message.reply_text("❍ ᴇʀʀᴏʀ: No response from API.")
+        else:
+            await message.reply_text(f"❍ ᴇʀʀᴏʀ: API request failed. Status code: {response.status_code}")
+
+    except Exception as e:
+        print(f"Error: {e}")
+        await message.reply_text(f"❍ ᴇʀʀᴏʀ: {e}")
+
+
+
+if __name__ == "__main__":
+    print("Bot is running...")
+    app.run()
                   
