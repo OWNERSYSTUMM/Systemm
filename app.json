@@ -22,6 +22,10 @@
         "value": "",
         "required": true
       },
+      "API_KEY": {
+        "description": "Your OpenAI API key",
+        "required": true
+    },
       "BOT_TOKEN": {
         "description": "A Bot's token from Botfather",
         "value": "",
